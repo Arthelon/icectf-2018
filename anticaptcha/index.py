@@ -1,4 +1,5 @@
 from requests_html import HTML
+import string
 import requests
 import re
 from config import CONFIG
@@ -61,7 +62,8 @@ def word_question_handler(text):
         return None
     index = int(match.group(1))
     line = match.group(2)
-    return line.split(" ")[index - 1]
+    translator = str.maketrans('', '', string.punctuation)
+    return line.translate(translator).split(" ")[index - 1]
 
 
 def boolean_question_handler(text):
@@ -101,7 +103,8 @@ for index in manual_indexes:
     answer = input("Question #{:0}: {:1} >> ".format(index+1, question_text))
     output[index] = answer
 
-res = requests.post(CONFIG["website_url"], data={
-                    "answer": ans for ans in output})
+data_arr = [("answer", ans) for ans in output]
+data_arr.append(("submit", "Submit Answers"))
+res = requests.post(CONFIG["website_url"], data=data_arr)
 with open("doc.html", mode="w") as file:
     file.write(res.text)
